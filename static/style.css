@@ -371,3 +371,16 @@ input:checked + .slider:before {
     box-shadow: 0 5px 15px rgba(255, 42, 95, 0.4);
     transform: translateY(-2px);
 }
+
+/* Footer Credit */
+footer {
+    margin-top: 3rem;
+    text-align: center;
+}
+
+.footer-credit {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+
