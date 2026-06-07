@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tongkrongan Spin Game</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="background-effects">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+    </div>
+
+    <main class="container">
+        <header>
+            <div class="lang-toggle-container">
+                <span class="lang-label active" id="label-id">ID</span>
+                <label class="switch">
+                    <input type="checkbox" id="lang-toggle">
+                    <span class="slider round"></span>
+                </label>
+                <span class="lang-label" id="label-en">EN</span>
+            </div>
+            <h1 class="title" id="main-title">Tanya <span class="highlight">Tongkrongan</span></h1>
+            <p class="subtitle" id="main-subtitle">Berani jawab jujur?</p>
+        </header>
+
+        <section class="game-area">
+            <div class="selector"></div> <!-- The middle indicator line -->
+            <div class="carousel-container">
+                <div class="carousel" id="carousel">
+                    <!-- Cards will be dynamically inserted here -->
+                </div>
+            </div>
+            <div class="fade-overlay left"></div>
+            <div class="fade-overlay right"></div>
+        </section>
+
+        <div class="controls">
+            <button id="spin-btn" class="btn-spin">
+                <span>TAKE A QUESTION</span>
+                <div class="btn-glow"></div>
+            </button>
+        </div>
+        
+        <div id="result-modal" class="modal hidden">
+            <div class="modal-content glass-card">
+                <h2>Pertanyaan Terpilih!</h2>
+                <p id="result-text"></p>
+                <button id="close-modal" class="btn-close">Tutup</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
