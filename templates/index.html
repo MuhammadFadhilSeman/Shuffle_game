@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tongkrongan Spin Game</title>
+    <title>Tongkrongan Card Game</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,35 +27,22 @@
                 <span class="lang-label" id="label-en">EN</span>
             </div>
             <h1 class="title" id="main-title">Tanya <span class="highlight">Tongkrongan</span></h1>
-            <p class="subtitle" id="main-subtitle">Berani jawab jujur?</p>
+            <p class="subtitle" id="main-subtitle">Pilih satu kartu!</p>
         </header>
 
         <section class="game-area">
-            <div class="selector"></div> <!-- The middle indicator line -->
-            <div class="carousel-container">
-                <div class="carousel" id="carousel">
-                    <!-- Cards will be dynamically inserted here -->
-                </div>
+            <div class="cards-container" id="cards-container">
+                <!-- Cards injected by JS -->
             </div>
-            <div class="fade-overlay left"></div>
-            <div class="fade-overlay right"></div>
         </section>
 
         <div class="controls">
-            <button id="spin-btn" class="btn-spin">
-                <span>TAKE A QUESTION</span>
+            <button id="deal-btn" class="btn-spin hidden">
+                <span id="btn-text">SHUFFLE & DEAL</span>
                 <div class="btn-glow"></div>
             </button>
         </div>
         
-        <div id="result-modal" class="modal hidden">
-            <div class="modal-content glass-card">
-                <h2>Pertanyaan Terpilih!</h2>
-                <p id="result-text"></p>
-                <button id="close-modal" class="btn-close">Tutup</button>
-            </div>
-        </div>
-
         <footer>
             <p class="footer-credit">Credit by <span class="highlight">Daigo</span></p>
         </footer>

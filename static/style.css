@@ -4,11 +4,10 @@
     --text-muted: #8b949e;
     --accent-1: #ff2a5f;
     --accent-2: #ff7e40;
-    --card-bg: rgba(255, 255, 255, 0.05);
+    --card-bg: #f8f9fa;
     --card-border: rgba(255, 255, 255, 0.1);
-    --card-width: 250px;
-    --card-margin: 10px;
-    --total-card-width: calc(var(--card-width) + (var(--card-margin) * 2));
+    --card-width: 220px;
+    --card-height: 320px;
 }
 
 * {
@@ -73,11 +72,11 @@ body {
 
 header {
     text-align: center;
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
 }
 
 .title {
-    font-size: 4rem;
+    font-size: 3.5rem;
     font-weight: 800;
     letter-spacing: -1px;
 }
@@ -92,6 +91,7 @@ header {
     font-size: 1.2rem;
     color: var(--text-muted);
     margin-top: 0.5rem;
+    transition: opacity 0.2s ease;
 }
 
 /* Language Toggle */
@@ -134,7 +134,7 @@ header {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--card-bg);
+    background-color: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--card-border);
     transition: .4s;
 }
@@ -163,95 +163,134 @@ input:checked + .slider:before {
     border-radius: 50%;
 }
 
-/* Game Area */
+/* Game Area: Cards */
 .game-area {
     width: 100%;
-    position: relative;
-    padding: 2rem 0;
-    margin-bottom: 3rem;
-    overflow: hidden;
-}
-
-.carousel-container {
-    width: 100%;
-    overflow: hidden;
-}
-
-.carousel {
+    padding: 1rem 0;
+    margin-bottom: 2rem;
     display: flex;
-    /* The transition is dynamically set in JS, but here's a fallback/default */
-    transition: transform 0s;
-    will-change: transform;
+    justify-content: center;
 }
 
-.card {
-    min-width: var(--card-width);
-    height: 350px;
-    margin: 0 var(--card-margin);
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 2rem;
+.cards-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap; /* Important for mobile */
+    perspective: 1500px;
+    min-height: var(--card-height);
+    width: 100%;
+    max-width: 800px;
+}
+
+/* Poker Card Styles */
+.poker-card {
+    width: var(--card-width);
+    height: var(--card-height);
+    position: relative;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+    
+    /* Starting state (above screen, invisible) */
+    transform: translateY(-100px) rotateY(180deg) scale(0.8);
+    opacity: 0;
+}
+
+/* Dealt state (face down on table) */
+.poker-card.dealt {
+    transform: translateY(0) rotateY(180deg) scale(1);
+    opacity: 1;
+}
+
+/* Hover effect before flipping */
+.poker-card.dealt:not(.flipped):hover {
+    transform: translateY(-10px) rotateY(180deg) scale(1.05);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+/* Flipped state (front showing, zoomed in slightly) */
+.poker-card.flipped {
+    transform: translateY(-15px) rotateY(0deg) scale(1.15);
+    z-index: 10;
+    cursor: default;
+}
+
+/* Hidden state (for cards not chosen) */
+.poker-card.hidden-card {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(30px) rotateY(180deg) scale(0.8);
+}
+
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-    opacity: 0.5;
-    transform: scale(0.9);
 }
 
-.card p {
-    font-size: 1.2rem;
-    font-weight: 600;
+/* Front of card (Question) */
+.card-front {
+    background-color: var(--card-bg);
+    color: #222;
+    border: 4px solid #fff;
+    /* Subtle inner border styling for premium feel */
+    background-image: linear-gradient(to bottom right, #ffffff, #f0f0f0);
+}
+
+.card-front-inner {
+    border: 2px dashed #b0b0b0;
+    width: 90%;
+    height: 92%;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.card-front p {
+    font-size: 1.15rem;
+    font-weight: 700;
     line-height: 1.5;
+    word-break: break-word;
 }
 
-.card.active {
-    opacity: 1;
-    transform: scale(1.05);
-    border-color: var(--accent-2);
-    box-shadow: 0 0 30px rgba(255, 126, 64, 0.3);
-    background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,126,64,0.05) 100%);
+/* Red Back of card */
+.card-back {
+    background-color: #ba0c2f;
+    /* Classic diamond pattern */
+    background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px),
+                      repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px);
+    border: 8px solid #fff;
+    transform: rotateY(180deg);
 }
 
-.selector {
+.card-back::after {
+    content: "♠♥♣♦";
+    font-size: 2rem;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 5px;
     position: absolute;
-    top: 0;
-    bottom: 0;
+    top: 50%;
     left: 50%;
-    width: 4px;
-    background: linear-gradient(to bottom, transparent, var(--accent-1), var(--accent-2), transparent);
-    transform: translateX(-50%);
-    z-index: 10;
-    box-shadow: 0 0 15px var(--accent-1);
+    transform: translate(-50%, -50%);
 }
 
-/* Fades for sides */
-.fade-overlay {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 150px;
-    z-index: 5;
-    pointer-events: none;
-}
 
-.fade-overlay.left {
-    left: 0;
-    background: linear-gradient(to right, var(--bg-color), transparent);
-}
-
-.fade-overlay.right {
-    right: 0;
-    background: linear-gradient(to left, var(--bg-color), transparent);
-}
-
-/* Button */
+/* Controls */
 .controls {
     display: flex;
     justify-content: center;
+    height: 60px;
 }
 
 .btn-spin {
@@ -266,8 +305,14 @@ input:checked + .slider:before {
     border-radius: 50px;
     cursor: pointer;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease, opacity 0.3s;
     backdrop-filter: blur(5px);
+}
+
+.btn-spin.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
 }
 
 .btn-spin span {
@@ -296,82 +341,6 @@ input:checked + .slider:before {
     left: 100%;
 }
 
-.btn-spin:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-    border-color: var(--card-border);
-}
-
-/* Modal */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(15, 17, 26, 0.8);
-    backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    opacity: 1;
-    transition: opacity 0.3s ease;
-}
-
-.modal.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.glass-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
-    padding: 3rem;
-    max-width: 500px;
-    width: 90%;
-    text-align: center;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-    transform: translateY(0);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.modal.hidden .glass-card {
-    transform: translateY(20px);
-}
-
-.glass-card h2 {
-    color: var(--accent-2);
-    margin-bottom: 1.5rem;
-    font-size: 2rem;
-}
-
-.glass-card p {
-    font-size: 1.5rem;
-    line-height: 1.6;
-    margin-bottom: 2rem;
-}
-
-.btn-close {
-    padding: 0.8rem 2.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    color: white;
-    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-close:hover {
-    box-shadow: 0 5px 15px rgba(255, 42, 95, 0.4);
-    transform: translateY(-2px);
-}
-
 /* Footer Credit */
 footer {
     margin-top: 3rem;
@@ -384,3 +353,28 @@ footer {
     letter-spacing: 1px;
 }
 
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .title { font-size: 2.5rem; }
+    .cards-container {
+        gap: 15px;
+        min-height: auto;
+    }
+    .poker-card {
+        /* Scale down cards on small screens */
+        width: 160px;
+        height: 230px;
+    }
+    .card-front p { font-size: 0.95rem; }
+    .poker-card.flipped {
+        transform: translateY(-5px) rotateY(0deg) scale(1.1);
+    }
+}
+
+@media (max-width: 480px) {
+    /* Stack cards partially overlapping or completely if too tight */
+    .poker-card {
+        width: 140px;
+        height: 200px;
+    }
+}

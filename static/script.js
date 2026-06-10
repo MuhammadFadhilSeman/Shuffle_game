@@ -1,141 +1,209 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const carouselContainer = document.querySelector('.carousel-container');
-    const carousel = document.getElementById('carousel');
-    const spinBtn = document.getElementById('spin-btn');
-    const resultModal = document.getElementById('result-modal');
-    const resultText = document.getElementById('result-text');
-    const closeModal = document.getElementById('close-modal');
+    const cardsContainer = document.getElementById('cards-container');
+    const dealBtn = document.getElementById('deal-btn');
+    const btnText = document.getElementById('btn-text');
     const langToggle = document.getElementById('lang-toggle');
     const labelId = document.getElementById('label-id');
     const labelEn = document.getElementById('label-en');
     const mainTitle = document.getElementById('main-title');
     const mainSubtitle = document.getElementById('main-subtitle');
 
-    let isSpinning = false;
+    let isGameActive = false;
     let baseQuestions = [];
     let currentLang = 'id';
+    let audioCtx = null;
 
-    // Card dimensions from CSS
-    const cardWidth = 250;
-    const cardMargin = 10;
-    const totalCardWidth = cardWidth + (cardMargin * 2);
+    // Initialize audio on first user interaction
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
 
-    // Audio Object for the new YouTube spin sound
-    const spinAudio = new Audio('/static/spin_sound.mp3');
+    // Synthesize a card shuffling sound (noise bursts)
+    function playShuffleSound() {
+        if (!audioCtx) return;
+        const duration = 0.5;
+        const bufferSize = audioCtx.sampleRate * duration;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
 
-    // Initial fetch of questions
-    fetchQuestions();
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 1000;
+
+        const gainNode = audioCtx.createGain();
+        
+        // Envelope: 3 quick bursts
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.05);
+        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.15);
+        gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.2);
+        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+        gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.35);
+        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+
+        noise.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        noise.start();
+    }
+
+    // Synthesize a quick swish sound for flipping
+    function playFlipSound() {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.15);
+        
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+    }
 
     async function fetchQuestions() {
         try {
             const response = await fetch(`/api/questions?lang=${currentLang}`);
             baseQuestions = await response.json();
-            setupCarousel();
+            // Start the first deal automatically once loaded
+            if (baseQuestions.length > 0) {
+                dealCards();
+            }
         } catch (error) {
             console.error('Error fetching questions:', error);
         }
     }
 
+    function createCard(question) {
+        const card = document.createElement('div');
+        card.className = 'poker-card';
+        
+        // Inner HTML for 3D flip: .card-face.card-front and .card-face.card-back
+        card.innerHTML = `
+            <div class="card-face card-front">
+                <div class="card-front-inner">
+                    <p>${question}</p>
+                </div>
+            </div>
+            <div class="card-face card-back"></div>
+        `;
+        return card;
+    }
+
+    function dealCards() {
+        cardsContainer.innerHTML = '';
+        dealBtn.classList.add('hidden');
+        isGameActive = true;
+        
+        // Pick 3 random questions
+        let shuffled = [...baseQuestions].sort(() => 0.5 - Math.random());
+        let selectedQuestions = shuffled.slice(0, 3);
+        
+        const cardElements = [];
+
+        selectedQuestions.forEach((q, i) => {
+            const card = createCard(q);
+            cardsContainer.appendChild(card);
+            cardElements.push(card);
+
+            card.addEventListener('click', () => {
+                if (!isGameActive) return;
+                initAudio();
+                flipCard(card, cardElements);
+            });
+        });
+
+        // Trigger deal animation staggered
+        setTimeout(() => { initAudio(); playShuffleSound(); }, 100);
+
+        cardElements.forEach((card, i) => {
+            setTimeout(() => {
+                card.classList.add('dealt');
+            }, 100 + (i * 150));
+        });
+        
+        updateSubtitleText(currentLang === 'en' ? 'Pick a card!' : 'Pilih satu kartu!');
+    }
+
+    function flipCard(selectedCard, allCards) {
+        isGameActive = false; // Prevent other clicks
+        playFlipSound();
+
+        allCards.forEach(card => {
+            if (card === selectedCard) {
+                card.classList.add('flipped');
+            } else {
+                card.classList.add('hidden-card');
+            }
+        });
+
+        // Show Next Round button after flip animation
+        setTimeout(() => {
+            btnText.textContent = currentLang === 'en' ? 'NEXT ROUND' : 'PUTAR LAGI';
+            dealBtn.classList.remove('hidden');
+            updateSubtitleText(currentLang === 'en' ? 'Here is your question!' : 'Ini pertanyaanmu!');
+        }, 800);
+    }
+
+    dealBtn.addEventListener('click', () => {
+        initAudio();
+        // Remove existing cards
+        const cards = document.querySelectorAll('.poker-card');
+        cards.forEach(card => {
+            card.classList.remove('dealt', 'flipped');
+            card.style.opacity = '0';
+        });
+
+        setTimeout(() => {
+            dealCards();
+        }, 300);
+    });
+
+    function updateSubtitleText(text) {
+        mainSubtitle.style.opacity = 0;
+        setTimeout(() => {
+            mainSubtitle.textContent = text;
+            mainSubtitle.style.opacity = 1;
+        }, 200);
+    }
+
     // Handle Language Toggle
     langToggle.addEventListener('change', (e) => {
-        if (isSpinning) {
-            e.preventDefault();
-            langToggle.checked = !langToggle.checked;
-            return;
-        }
-
         if (e.target.checked) {
             currentLang = 'en';
             labelEn.classList.add('active');
             labelId.classList.remove('active');
             mainTitle.innerHTML = `Hangout <span class="highlight">Questions</span>`;
-            mainSubtitle.textContent = `Dare to be honest?`;
-            spinBtn.querySelector('span').textContent = `TAKE A QUESTION`;
-            document.querySelector('#result-modal h2').textContent = `Selected Question!`;
-            closeModal.textContent = `Close`;
         } else {
             currentLang = 'id';
             labelId.classList.add('active');
             labelEn.classList.remove('active');
             mainTitle.innerHTML = `Tanya <span class="highlight">Tongkrongan</span>`;
-            mainSubtitle.textContent = `Berani jawab jujur?`;
-            spinBtn.querySelector('span').textContent = `TAKE A QUESTION`;
-            document.querySelector('#result-modal h2').textContent = `Pertanyaan Terpilih!`;
-            closeModal.textContent = `Tutup`;
         }
         
+        // Re-fetch and re-deal
         fetchQuestions();
     });
 
-    function setupCarousel() {
-        let longQuestionsList = [];
-        for (let i = 0; i < 10; i++) {
-            let shuffled = [...baseQuestions].sort(() => 0.5 - Math.random());
-            longQuestionsList = longQuestionsList.concat(shuffled);
-        }
-
-        carousel.innerHTML = '';
-        longQuestionsList.forEach((q, index) => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `<p>${q}</p>`;
-            card.dataset.index = index;
-            carousel.appendChild(card);
-        });
-
-        const containerCenter = carouselContainer.offsetWidth / 2;
-        const centerOffset = containerCenter - (totalCardWidth / 2);
-        carousel.style.transition = 'none';
-        carousel.style.transform = `translateX(${centerOffset}px)`;
-        
-        return longQuestionsList;
-    }
-
-    spinBtn.addEventListener('click', () => {
-        if (isSpinning || baseQuestions.length === 0) return;
-        
-        isSpinning = true;
-        spinBtn.disabled = true;
-
-        // Reset and play the new spin audio
-        spinAudio.currentTime = 0;
-        spinAudio.play().catch(e => console.log('Audio play failed:', e));
-
-        setupCarousel();
-        void carousel.offsetWidth;
-
-        const minCards = 50;
-        const maxCards = 80;
-        const winningIndex = Math.floor(Math.random() * (maxCards - minCards + 1)) + minCards;
-        
-        const maxOffset = (cardWidth / 2) - 20; 
-        const randomOffset = Math.floor(Math.random() * (maxOffset * 2)) - maxOffset;
-
-        const containerCenter = carouselContainer.offsetWidth / 2;
-        const targetPos = containerCenter - (winningIndex * totalCardWidth) - (totalCardWidth / 2) + randomOffset;
-
-        // Set duration to 5000ms to exactly match the 5-second audio clip
-        const spinDuration = 5000;
-        carousel.style.transition = `transform ${spinDuration}ms cubic-bezier(0.15, 0.85, 0.15, 1)`;
-        carousel.style.transform = `translateX(${targetPos}px)`;
-
-        setTimeout(() => {
-            isSpinning = false;
-            spinBtn.disabled = false;
-            
-            const cards = document.querySelectorAll('.card');
-            if (cards[winningIndex]) {
-                cards[winningIndex].classList.add('active');
-                
-                setTimeout(() => {
-                    resultText.textContent = cards[winningIndex].textContent;
-                    resultModal.classList.remove('hidden');
-                }, 800);
-            }
-        }, spinDuration);
-    });
-
-    closeModal.addEventListener('click', () => {
-        resultModal.classList.add('hidden');
-    });
+    // Start
+    fetchQuestions();
 });
