@@ -416,6 +416,27 @@ footer {
     letter-spacing: 1px;
 }
 
+/* Start Overlay */
+.start-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 17, 26, 0.9);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    transition: opacity 0.5s ease;
+}
+
+.start-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .title { font-size: 2.5rem; }
@@ -424,20 +445,33 @@ footer {
         min-height: auto;
     }
     .poker-card {
-        /* Scale down cards on small screens */
         width: 160px;
         height: 230px;
     }
     .card-front p { font-size: 0.95rem; }
     .poker-card.flipped {
-        transform: translateY(-5px) rotateY(0deg) scale(1.1);
+        transform: translateY(-5px) rotateY(0deg) scale(1.1) !important;
     }
 }
 
 @media (max-width: 480px) {
-    /* Stack cards partially overlapping or completely if too tight */
+    .title { font-size: 2rem; }
+    .cards-container {
+        gap: 3vw;
+        padding: 0 10px;
+        flex-wrap: nowrap; /* Force them to stay side by side */
+    }
     .poker-card {
-        width: 140px;
-        height: 200px;
+        /* Use viewport width so 3 cards perfectly fit side by side */
+        width: 28vw;
+        height: 42vw;
+    }
+    .card-front-inner {
+        padding: 5px;
+        width: 95%;
+        height: 95%;
+    }
+    .card-front p {
+        font-size: 0.75rem;
     }
 }

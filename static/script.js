@@ -7,11 +7,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const labelEn = document.getElementById('label-en');
     const mainTitle = document.getElementById('main-title');
     const mainSubtitle = document.getElementById('main-subtitle');
+    const startOverlay = document.getElementById('start-overlay');
+    const startBtn = document.getElementById('start-btn');
 
     let isGameActive = false;
     let baseQuestions = [];
     let currentLang = 'id';
     let audioCtx = null;
+    let gameStarted = false;
 
     // Initialize audio on first user interaction
     function initAudio() {
@@ -88,9 +91,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`/api/questions?lang=${currentLang}`);
             baseQuestions = await response.json();
-            // Start the first deal automatically once loaded with animation
-            if (baseQuestions.length > 0) {
-                startDeckAnimationAndDeal(true);
+            
+            // If user already clicked "Mulai Main", changing language should auto-deal
+            if (gameStarted && baseQuestions.length > 0) {
+                startDeckAnimationAndDeal();
             }
         } catch (error) {
             console.error('Error fetching questions:', error);
@@ -166,12 +170,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 800);
     }
 
-    function startDeckAnimationAndDeal(isInitialLoad = false) {
-        if (typeof isInitialLoad !== 'boolean') isInitialLoad = false;
-
-        if (!isInitialLoad) {
-            initAudio();
-        }
+    function startDeckAnimationAndDeal() {
+        initAudio();
         
         // Remove existing cards first
         const cards = document.querySelectorAll('.poker-card');
@@ -191,11 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Start shuffle animation
             deckContainer.classList.remove('hidden');
             deckContainer.classList.add('shuffling');
-            
-            // Only play sound if it's not the initial browser load to prevent audio sync bugs
-            if (!isInitialLoad) {
-                playShuffleSound();
-            }
+            playShuffleSound();
 
             // End shuffle and deal
             setTimeout(() => {
@@ -206,6 +202,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         }, 300);
     }
+
+    startBtn.addEventListener('click', () => {
+        gameStarted = true;
+        startOverlay.classList.add('hidden');
+        startDeckAnimationAndDeal();
+    });
 
     dealBtn.addEventListener('click', startDeckAnimationAndDeal);
 
