@@ -267,14 +267,15 @@ input:checked + .slider:before {
 
 /* Flipped state (front showing, zoomed in slightly) */
 .poker-card.flipped {
-    transform: translateY(-15px) rotateY(0deg) scale(1.15);
+    transform: translateY(-15px) rotateY(0deg) scale(1.15) !important;
     z-index: 10;
     cursor: default;
+    opacity: 1 !important;
 }
 
 /* Unselected state (dimmed, stays face down) */
 .poker-card.unselected-card {
-    opacity: 0.5;
+    opacity: 0.5 !important;
     pointer-events: none;
     transform: translateY(20px) rotateY(180deg) scale(0.9) !important;
     filter: brightness(0.7);

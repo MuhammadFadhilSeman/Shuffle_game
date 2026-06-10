@@ -23,9 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    let currentNoise = null;
     // Synthesize a card shuffling sound (noise bursts)
     function playShuffleSound() {
         if (!audioCtx) return;
+        if (currentNoise) {
+            try { currentNoise.stop(); } catch(e){}
+        }
+        
         const duration = 1.5;
         const bufferSize = audioCtx.sampleRate * duration;
         const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -56,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gainNode.connect(audioCtx.destination);
         
         noise.start();
+        currentNoise = noise;
     }
 
     // Synthesize a quick swish sound for flipping
@@ -84,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
             baseQuestions = await response.json();
             // Start the first deal automatically once loaded with animation
             if (baseQuestions.length > 0) {
-                startDeckAnimationAndDeal();
+                startDeckAnimationAndDeal(true);
             }
         } catch (error) {
             console.error('Error fetching questions:', error);
@@ -146,10 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         allCards.forEach(card => {
             if (card === selectedCard) {
-                card.classList.remove('dealt');
                 card.classList.add('flipped');
             } else {
-                card.classList.remove('dealt');
                 card.classList.add('unselected-card');
             }
         });
@@ -162,13 +166,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 800);
     }
 
-    function startDeckAnimationAndDeal() {
-        initAudio();
+    function startDeckAnimationAndDeal(isInitialLoad = false) {
+        if (typeof isInitialLoad !== 'boolean') isInitialLoad = false;
+
+        if (!isInitialLoad) {
+            initAudio();
+        }
         
         // Remove existing cards first
         const cards = document.querySelectorAll('.poker-card');
         cards.forEach(card => {
-            card.classList.remove('dealt', 'flipped');
+            card.classList.remove('dealt', 'flipped', 'unselected-card');
             card.style.opacity = '0';
         });
 
@@ -183,7 +191,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Start shuffle animation
             deckContainer.classList.remove('hidden');
             deckContainer.classList.add('shuffling');
-            playShuffleSound();
+            
+            // Only play sound if it's not the initial browser load to prevent audio sync bugs
+            if (!isInitialLoad) {
+                playShuffleSound();
+            }
 
             // End shuffle and deal
             setTimeout(() => {
