@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Synthesize a card shuffling sound (noise bursts)
     function playShuffleSound() {
         if (!audioCtx) return;
-        const duration = 0.5;
+        const duration = 1.5;
         const bufferSize = audioCtx.sampleRate * duration;
         const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
         const data = buffer.getChannelData(0);
@@ -40,18 +40,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const filter = audioCtx.createBiquadFilter();
         filter.type = 'lowpass';
-        filter.frequency.value = 1000;
+        filter.frequency.value = 1200;
 
         const gainNode = audioCtx.createGain();
         
-        // Envelope: 3 quick bursts
+        // Envelope: multiple quick bursts over 1.5s
         gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.05);
-        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.15);
-        gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.2);
-        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
-        gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.35);
-        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+        for(let t = 0; t < 1.5; t += 0.2) {
+            gainNode.gain.linearRampToValueAtTime(0.6, audioCtx.currentTime + t + 0.05);
+            gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + t + 0.15);
+        }
 
         noise.connect(filter);
         filter.connect(gainNode);
@@ -133,8 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Trigger deal animation staggered
-        setTimeout(() => { initAudio(); playShuffleSound(); }, 100);
-
         cardElements.forEach((card, i) => {
             setTimeout(() => {
                 card.classList.add('dealt');
@@ -152,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (card === selectedCard) {
                 card.classList.add('flipped');
             } else {
-                card.classList.add('hidden-card');
+                card.classList.add('unselected-card');
             }
         });
 
@@ -164,19 +160,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 800);
     }
 
-    dealBtn.addEventListener('click', () => {
+    function startDeckAnimationAndDeal() {
         initAudio();
-        // Remove existing cards
+        
+        // Remove existing cards first
         const cards = document.querySelectorAll('.poker-card');
         cards.forEach(card => {
             card.classList.remove('dealt', 'flipped');
             card.style.opacity = '0';
         });
 
+        const deckContainer = document.getElementById('deck-container');
+        dealBtn.classList.add('hidden');
+        updateSubtitleText(currentLang === 'en' ? 'Shuffling...' : 'Mengocok kartu...');
+        
+        // Short delay to let old cards fade out
         setTimeout(() => {
-            dealCards();
+            cardsContainer.innerHTML = '';
+            
+            // Start shuffle animation
+            deckContainer.classList.remove('hidden');
+            deckContainer.classList.add('shuffling');
+            playShuffleSound();
+
+            // End shuffle and deal
+            setTimeout(() => {
+                deckContainer.classList.remove('shuffling');
+                deckContainer.classList.add('hidden');
+                dealCards();
+            }, 1500);
+
         }, 300);
-    });
+    }
+
+    dealBtn.addEventListener('click', startDeckAnimationAndDeal);
 
     function updateSubtitleText(text) {
         mainSubtitle.style.opacity = 0;

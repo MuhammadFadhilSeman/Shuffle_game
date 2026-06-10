@@ -170,6 +170,61 @@ input:checked + .slider:before {
     margin-bottom: 2rem;
     display: flex;
     justify-content: center;
+    position: relative;
+}
+
+/* Deck Container & Animation */
+.deck-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--card-width);
+    height: var(--card-height);
+    perspective: 1500px;
+    z-index: 50;
+}
+
+.deck-container.hidden {
+    display: none;
+}
+
+.deck-card {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #ba0c2f;
+    background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px),
+                      repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px);
+    border: 8px solid #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    transform-origin: center center;
+}
+
+.deck-container.shuffling .deck-card-1 {
+    animation: shuffle-left 0.4s infinite alternate ease-in-out;
+}
+.deck-container.shuffling .deck-card-2 {
+    animation: shuffle-right 0.4s 0.2s infinite alternate ease-in-out;
+}
+.deck-container.shuffling .deck-card-3 {
+    animation: shuffle-up 0.3s 0.1s infinite alternate ease-in-out;
+}
+
+@keyframes shuffle-left {
+    0% { transform: translateX(0) rotate(-2deg); }
+    100% { transform: translateX(-60px) rotate(-10deg) translateY(10px); z-index: 5; }
+}
+
+@keyframes shuffle-right {
+    0% { transform: translateX(0) rotate(2deg); }
+    100% { transform: translateX(60px) rotate(10deg) translateY(5px); z-index: 6; }
+}
+
+@keyframes shuffle-up {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-30px); z-index: 4; }
 }
 
 .cards-container {
@@ -217,11 +272,12 @@ input:checked + .slider:before {
     cursor: default;
 }
 
-/* Hidden state (for cards not chosen) */
-.poker-card.hidden-card {
-    opacity: 0;
+/* Unselected state (dimmed, stays face down) */
+.poker-card.unselected-card {
+    opacity: 0.5;
     pointer-events: none;
-    transform: translateY(30px) rotateY(180deg) scale(0.8);
+    transform: translateY(20px) rotateY(180deg) scale(0.9);
+    filter: brightness(0.7);
 }
 
 .card-face {
