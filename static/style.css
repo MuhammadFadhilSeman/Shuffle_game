@@ -277,8 +277,8 @@ input:checked + .slider:before {
 .poker-card.unselected-card {
     opacity: 0 !important;
     pointer-events: none;
-    transform: translateY(150px) rotateY(180deg) scale(0.8) !important;
-    transition: all 0.6s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+    transform: translateY(80px) rotateY(180deg) scale(0.6) !important;
+    transition: all 0.8s ease-out;
 }
 
 .card-face {
@@ -456,21 +456,30 @@ footer {
 @media (max-width: 480px) {
     .title { font-size: 2rem; }
     .cards-container {
-        gap: 3vw;
+        gap: 0;
         padding: 0 10px;
-        flex-wrap: nowrap; /* Force them to stay side by side */
+        flex-wrap: nowrap;
     }
     .poker-card {
-        /* Use viewport width so 3 cards perfectly fit side by side */
-        width: 28vw;
-        height: 42vw;
+        /* Base size is much larger, overlapping margins keep them on screen */
+        width: 42vw;
+        height: 60vw;
+        margin: 0 -5vw;
     }
     .card-front-inner {
-        padding: 5px;
-        width: 95%;
-        height: 95%;
+        padding: 10px;
+        width: 94%;
+        height: 94%;
     }
     .card-front p {
-        font-size: 0.75rem;
+        font-size: 0.85rem;
+    }
+    .poker-card.flipped {
+        transform: translateY(-20px) rotateY(0deg) scale(1.15) !important;
+        z-index: 100;
+    }
+    .card-back::after {
+        font-size: 1.2rem;
+        letter-spacing: 2px;
     }
 }
