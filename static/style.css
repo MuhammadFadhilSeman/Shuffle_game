@@ -273,13 +273,12 @@ input:checked + .slider:before {
     opacity: 1 !important;
 }
 
-/* Unselected state (dimmed, stays face down) */
+/* Unselected state (slides down and disappears) */
 .poker-card.unselected-card {
-    opacity: 0.5 !important;
+    opacity: 0 !important;
     pointer-events: none;
-    transform: translateY(20px) rotateY(180deg) scale(0.9) !important;
-    filter: brightness(0.7);
-    transition: all 0.4s ease;
+    transform: translateY(150px) rotateY(180deg) scale(0.8) !important;
+    transition: all 0.6s cubic-bezier(0.6, -0.28, 0.735, 0.045);
 }
 
 .card-face {
