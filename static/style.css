@@ -276,8 +276,9 @@ input:checked + .slider:before {
 .poker-card.unselected-card {
     opacity: 0.5;
     pointer-events: none;
-    transform: translateY(20px) rotateY(180deg) scale(0.9);
+    transform: translateY(20px) rotateY(180deg) scale(0.9) !important;
     filter: brightness(0.7);
+    transition: all 0.4s ease;
 }
 
 .card-face {
@@ -304,20 +305,25 @@ input:checked + .slider:before {
 
 .card-front-inner {
     border: 2px dashed #b0b0b0;
-    width: 90%;
+    width: 92%;
     height: 92%;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1.5rem;
+    padding: 1rem;
+    overflow: hidden;
 }
 
 .card-front p {
-    font-size: 1.15rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    line-height: 1.5;
+    line-height: 1.4;
+    text-align: center;
     word-break: break-word;
+    hyphens: auto;
+    margin: 0;
+    width: 100%;
 }
 
 /* Red Back of card */

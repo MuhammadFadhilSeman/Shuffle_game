@@ -82,9 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`/api/questions?lang=${currentLang}`);
             baseQuestions = await response.json();
-            // Start the first deal automatically once loaded
+            // Start the first deal automatically once loaded with animation
             if (baseQuestions.length > 0) {
-                dealCards();
+                startDeckAnimationAndDeal();
             }
         } catch (error) {
             console.error('Error fetching questions:', error);
@@ -146,8 +146,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         allCards.forEach(card => {
             if (card === selectedCard) {
+                card.classList.remove('dealt');
                 card.classList.add('flipped');
             } else {
+                card.classList.remove('dealt');
                 card.classList.add('unselected-card');
             }
         });
