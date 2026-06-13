@@ -198,7 +198,47 @@ QUESTIONS_EN = [
 ]
 
 
+# ─── Dedicated questions for the Funny Question Spinner ───────────────────────
+SPINNER_QUESTIONS = [
+    "Kalo alien turun ke bumi dan minta diajarin satu tren TikTok, lu bakal ngajarin joget apa?",
+    "Mending nemu bug yang bikin error se-layar, atau kode jalan lancar tapi lu nggak tau kenapa bisa jalan?",
+    "Kalau lu dikasih kekuatan super tapi cuma bisa dipake buat nge-prank adek lu di rumah, kekuatan apa yang lu pilih?",
+    "Lebih deg-degan mana: dapet chat \"Kita perlu ngomong\" dari pacar, atau dapet error \"Segmentation fault\" di terminal?",
+    "Kalo ayam jago berkokok jam 3 pagi, itu dia lagi overthinking mikirin apa sih?",
+    "Sebutin satu alasan paling absurd kenapa lu tiba-tiba ngerasa pengen ghosting orang!",
+    "Lebih milih mana: Wi-Fi mati pas lagi asik push rank, atau listrik mati pas lagi main game AAA yang belum sempat di-save?",
+    "Kalo ChatGPT tiba-tiba bisa ngambek dan punya perasaan, menurut lu kalimat sarkas pertama yang dia ketik ke lu apa?",
+    "Menurut lu, alien kalo ke bumi bakal lebih kaget liat cowok rajin pake skincare atau liat bocil pacaran manggil 'Ayah-Bunda'?",
+    "Kalau lu harus pake kostum cosplay yang absurd banget ke kampus seharian, kostum karakter apa yang lu pilih?",
+    "Kalo mantan lu tiba-tiba jadi juri di kompetisi inovasi yang lu ikutin, lu bakal panik atau malah roasting dia pas presentasi?",
+    "Sebutin satu kebohongan yang paling sering lu bilang ke diri sendiri pas lagi ngerjain project yang mepet deadline.",
+    "Kalau karakter anime favorit lu tiba-tiba nyasar ke Banjarbaru, lu bakal ngajak dia makan apa?",
+    "Hal apa yang paling sering bikin lu ngerasa 'anjir, jompo banget gue' padahal umur masih muda?",
+    "Lebih milih pacar lu ngambek karena lu kelamaan main game, atau lu yang ngambek karena pacar lu jago banget main gamenya dan lu dibantai terus?",
+    "Menurut lu, kenapa tutup Tupperware emak kalo ilang selalu bilangnya dicolong jin, padahal nyelip di kulkas?",
+    "Mending makan seblak tapi kuahnya diganti kuah soto, atau makan soto tapi kuahnya diganti kuah seblak?",
+    "Kalo lu bisa bikin satu jurusan kuliah baru yang nyeleneh banget, jurusan apa itu?",
+    "Kalau lu punya 'Pintu Kemana Saja' Doraemon tapi error dan cuma bisa nganter lu ke depan minimarket, lu tetep pake nggak?",
+    "Mending kelupaan bawa dompet pas lagi nongkrong, atau lupa nutup tag HTML pas lagi ngoding dan layout hancur semua?",
+    "Menurut lu, debu di kamar kosan itu sebenernya spawn dari dimensi mana sih? Kerasanya cepet banget numpuknya!",
+    "Kalo lu ditunjuk jadi 'Menteri Urusan Per-wibu-an', kebijakan nyeleneh apa yang bakal lu resmikan pertama kali?",
+    "Kalo lu bisa ganti nama hari Senin jadi nama yang lebih vibes-nya positif, lu bakal kasih nama apa?",
+    "Menurut lu, kenapa kucing oren selalu jadi tersangka utama di setiap keributan antar kucing di kompleks?",
+    "Lebih panik mana: disuruh presentasi tapi lupa materi, atau salah kirim chat gibah ke dosen pembimbing?",
+    "Kalo lu bisa masuk ke dunia game AAA favorit lu tapi nasib lu cuma jadi NPC yang kerjanya nyapu jalan doang, lu tetep mau nggak?",
+    "Lebih anxious mana: nungguin balasan chat dari gebetan yang centang dua abu-abu, atau nunggu proses deploy website ke server?",
+    "Kalo disuruh bikin skripsi tentang kelakuan Gen Z di internet, judul skripsi lu bakal kayak gimana?",
+    "Seandainya di dompet lu cuma sisa Rp 15.000, lu pake buat beli es kopi susu atau mie instan pake telor?",
+    "Kalo tiba-tiba ada zombie apocalypse, barang random pertama di dekat lu sekarang yang bakal lu jadiin senjata apa?",
+]
+
+
 @app.route("/")
+def home():
+    return render_template("home.html")
+
+
+@app.route("/game")
 def index():
     return render_template("index.html")
 
@@ -212,6 +252,18 @@ def get_questions():
     shuffled_questions = list(questions_list)
     random.shuffle(shuffled_questions)
     return jsonify(shuffled_questions)
+
+
+@app.route("/spinner")
+def spinner():
+    return render_template("spinner.html")
+
+
+@app.route("/api/get_question")
+def get_question():
+    """Returns a single randomly selected funny question from the Spinner list."""
+    question = random.choice(SPINNER_QUESTIONS)
+    return jsonify({"question": question})
 
 
 if __name__ == "__main__":

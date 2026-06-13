@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 Funny Question Spinner – Solar System Edition</title>
+    <meta name="description" content="Click the Sun to trigger the Big Bang and reveal a funny question from the cosmos!">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='spinner.css') }}">
+</head>
+<body>
+
+    <!-- Meteor shower canvas layer -->
+    <canvas id="meteor-canvas"></canvas>
+
+    <!-- Big Bang flash overlay -->
+    <div id="bang-flash" class="bang-flash"></div>
+
+    <!-- Particle container for Big Bang explosion -->
+    <div id="particles-container" class="particles-container"></div>
+
+    <!-- ===== SOLAR SYSTEM ===== -->
+    <div id="solar-system" class="solar-system">
+
+        <!-- Orbit rings (decorative) -->
+        <div class="orbit orbit-mercury"></div>
+        <div class="orbit orbit-venus"></div>
+        <div class="orbit orbit-earth"></div>
+        <div class="orbit orbit-mars"></div>
+        <div class="orbit orbit-jupiter"></div>
+        <div class="orbit orbit-saturn"></div>
+        <div class="orbit orbit-uranus"></div>
+
+        <!-- Central Sun (clickable) -->
+        <button id="sun-btn" class="sun" aria-label="Click to spin and get a funny question">
+            <div class="sun-glow"></div>
+            <div class="sun-surface">
+                <div class="sun-face">
+                    <div class="sun-eyes">
+                        <div class="sun-eye left-eye"><div class="pupil"></div></div>
+                        <div class="sun-eye right-eye"><div class="pupil"></div></div>
+                    </div>
+                    <div class="sun-cheeks">
+                        <div class="cheek left-cheek"></div>
+                        <div class="cheek right-cheek"></div>
+                    </div>
+                    <div class="sun-mouth"></div>
+                </div>
+            </div>
+            <div class="sun-rays">
+                <div class="ray"></div><div class="ray"></div><div class="ray"></div>
+                <div class="ray"></div><div class="ray"></div><div class="ray"></div>
+                <div class="ray"></div><div class="ray"></div>
+            </div>
+            <span class="sun-label">Click Me!</span>
+        </button>
+
+        <!-- Mercury -->
+        <div class="orbit-track orbit-track-mercury">
+            <div class="planet planet-mercury" data-name="Mercury" data-emoji="☿️">
+                <div class="planet-face">
+                    <div class="p-eyes"><div class="p-eye"></div><div class="p-eye"></div></div>
+                    <div class="p-mouth"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Venus -->
+        <div class="orbit-track orbit-track-venus">
+            <div class="planet planet-venus" data-name="Venus" data-emoji="♀️">
+                <div class="planet-face">
+                    <div class="p-eyes"><div class="p-eye"></div><div class="p-eye"></div></div>
+                    <div class="p-cheeks"><div class="p-cheek"></div><div class="p-cheek"></div></div>
+                    <div class="p-mouth"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earth -->
+        <div class="orbit-track orbit-track-earth">
+            <div class="planet planet-earth" data-name="Earth" data-emoji="🌍">
+                <div class="planet-face">
+                    <div class="p-eyes"><div class="p-eye"></div><div class="p-eye"></div></div>
+                    <div class="p-cheeks"><div class="p-cheek"></div><div class="p-cheek"></div></div>
+                    <div class="p-mouth"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mars -->
+        <div class="orbit-track orbit-track-mars">
+            <div class="planet planet-mars" data-name="Mars" data-emoji="♂️">
+                <div class="planet-face">
+                    <div class="p-eyes"><div class="p-eye"></div><div class="p-eye"></div></div>
+                    <div class="p-mouth p-mouth-cool"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jupiter -->
+        <div class="orbit-track orbit-track-jupiter">
+            <div class="planet planet-jupiter" data-name="Jupiter" data-emoji="⚡">
+                <div class="planet-face">
+                    <div class="p-eyes"><div class="p-eye"></div><div class="p-eye"></div></div>
+                    <div class="p-cheeks"><div class="p-cheek"></div><div class="p-cheek"></div></div>
+                    <div class="p-mouth"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saturn (with ring) -->
+        <div class="orbit-track orbit-track-saturn">
+            <div class="planet planet-saturn" data-name="Saturn" data-emoji="🪐">
+                <div class="saturn-ring"></div>
+                <div class="planet-face">
+                    <div class="p-eyes"><div class="p-eye"></div><div class="p-eye"></div></div>
+                    <div class="p-cheeks"><div class="p-cheek"></div><div class="p-cheek"></div></div>
+                    <div class="p-mouth"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Uranus -->
+        <div class="orbit-track orbit-track-uranus">
+            <div class="planet planet-uranus" data-name="Uranus" data-emoji="💙">
+                <div class="planet-face">
+                    <div class="p-eyes"><div class="p-eye"></div><div class="p-eye"></div></div>
+                    <div class="p-mouth"></div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /.solar-system -->
+
+    <!-- ===== HEADER ===== -->
+    <header class="page-header">
+        <a href="/" class="back-link" id="back-link">← Home</a>
+        <h1 class="page-title">🌟 Funny Question <span class="title-highlight">Spinner</span></h1>
+        <p class="page-subtitle">Click the Sun to trigger the <strong>Big Bang</strong> and receive a cosmic question!</p>
+
+        <!-- Language Toggle -->
+        <div class="lang-toggle-container">
+            <span class="lang-label active" id="spinner-label-id">🇮🇩 ID</span>
+            <label class="switch">
+                <input type="checkbox" id="spinner-lang-toggle">
+                <span class="slider round"></span>
+            </label>
+            <span class="lang-label" id="spinner-label-en">🇺🇸 EN</span>
+        </div>
+    </header>
+
+    <!-- ===== QUESTION MODAL ===== -->
+    <div id="question-modal" class="question-modal" role="dialog" aria-modal="true" aria-labelledby="modal-planet-name">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <!-- Planet showcase -->
+            <div class="modal-planet-showcase">
+                <div id="modal-planet" class="modal-planet">
+                    <div class="planet-face">
+                        <div class="p-eyes"><div class="p-eye"></div><div class="p-eye"></div></div>
+                        <div class="p-cheeks"><div class="p-cheek"></div><div class="p-cheek"></div></div>
+                        <div class="p-mouth"></div>
+                    </div>
+                </div>
+                <p id="modal-planet-name" class="modal-planet-name">Earth 🌍</p>
+                <p class="modal-planet-says">says...</p>
+            </div>
+
+            <!-- Speech bubble with question -->
+            <div class="modal-speech-bubble">
+                <div class="bubble-tail"></div>
+                <div class="bubble-body">
+                    <div id="question-loader" class="question-loader">
+                        <div class="loader-dot"></div>
+                        <div class="loader-dot"></div>
+                        <div class="loader-dot"></div>
+                    </div>
+                    <p id="question-text" class="question-text hidden"></p>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="modal-actions">
+                <button id="spin-again-btn" class="modal-btn btn-spin-again">
+                    <span>🔄 Spin Again!</span>
+                </button>
+                <button id="close-modal-btn" class="modal-btn btn-close-modal">
+                    <span>✕ Reset</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='spinner.js') }}"></script>
+</body>
+</html>

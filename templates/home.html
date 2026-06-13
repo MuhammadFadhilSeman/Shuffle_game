@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Question Game – Tongkrongan & Funny Question Spinner</title>
+    <meta name="description"
+        content="Choose your game mode: Tongkrongan Card Game or the Funny Question Solar System Spinner!">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #07091a;
+            --accent-1: #ff2a5f;
+            --accent-2: #ff7e40;
+            --accent-3: #FFD700;
+            --accent-4: #00f5ff;
+            --card-glass: rgba(255, 255, 255, 0.04);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100vh;
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* ─── Animated star background ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image:
+                radial-gradient(1.5px 1.5px at 10% 15%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
+                radial-gradient(1px 1px at 25% 60%, rgba(255, 255, 255, 0.7) 0%, transparent 100%),
+                radial-gradient(2px 2px at 40% 30%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+                radial-gradient(1px 1px at 55% 80%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 70% 20%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
+                radial-gradient(1px 1px at 80% 55%, rgba(255, 255, 255, 0.7) 0%, transparent 100%),
+                radial-gradient(2px 2px at 90% 10%, rgba(255, 255, 255, 0.5) 0%, transparent 100%),
+                radial-gradient(1px 1px at 15% 90%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 60% 45%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+                radial-gradient(1px 1px at 35% 70%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
+                radial-gradient(1px 1px at 88% 80%, rgba(255, 255, 255, 0.7) 0%, transparent 100%),
+                radial-gradient(2px 2px at 5% 50%, rgba(255, 255, 255, 0.5) 0%, transparent 100%);
+            animation: twinkle 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% {
+                opacity: 0.6;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Ambient glow blobs */
+        .glow-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.18;
+            pointer-events: none;
+            z-index: 0;
+            animation: blob-drift 12s ease-in-out infinite alternate;
+        }
+
+        .glow-blob-1 {
+            width: 500px;
+            height: 500px;
+            background: var(--accent-1);
+            top: -150px;
+            left: -100px;
+        }
+
+        .glow-blob-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-4);
+            bottom: -100px;
+            right: -80px;
+            animation-delay: -6s;
+        }
+
+        .glow-blob-3 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent-3);
+            top: 40%;
+            left: 40%;
+            animation-delay: -3s;
+        }
+
+        @keyframes blob-drift {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(40px, 30px) scale(1.1);
+            }
+        }
+
+        /* ─── Layout ─── */
+        .hub-wrapper {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            gap: 2.5rem;
+        }
+
+        /* ─── Header ─── */
+        .hub-header {
+            text-align: center;
+        }
+
+        .hub-eyebrow {
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.35);
+            margin-bottom: 0.6rem;
+        }
+
+        .hub-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(2.4rem, 8vw, 4.2rem);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -1px;
+        }
+
+        .hub-title .grad-text {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2), var(--accent-3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hub-subtitle {
+            margin-top: 0.8rem;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.45);
+            font-weight: 600;
+        }
+
+        /* ─── Cards container ─── */
+        .mode-cards {
+            display: flex;
+            gap: 1.8rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 840px;
+        }
+
+        /* ─── Individual mode card ─── */
+        .mode-card {
+            position: relative;
+            flex: 1 1 340px;
+            max-width: 390px;
+            background: var(--card-glass);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            padding: 2.4rem 2rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            text-decoration: none;
+            color: inherit;
+            backdrop-filter: blur(14px);
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(.34, 1.56, .64, 1),
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-10px) scale(1.02);
+        }
+
+        /* Card-specific accent colours */
+        .mode-card.card-tongkrongan {
+            --card-accent: var(--accent-1);
+            --card-accent-2: var(--accent-2);
+        }
+
+        .mode-card.card-spinner {
+            --card-accent: var(--accent-3);
+            --card-accent-2: var(--accent-4);
+        }
+
+        .mode-card:hover {
+            border-color: var(--card-accent);
+            box-shadow: 0 0 40px rgba(var(--card-accent-rgb, 255, 42, 95), 0.2),
+                0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-tongkrongan:hover {
+            box-shadow: 0 0 40px rgba(255, 42, 95, 0.25), 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-spinner:hover {
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.25), 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Shine sweep on hover */
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+            transition: left 0.5s ease;
+            pointer-events: none;
+        }
+
+        .mode-card:hover::before {
+            left: 150%;
+        }
+
+        /* Top gradient bar */
+        .mode-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 28px 28px 0 0;
+        }
+
+        .card-tongkrongan::after {
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+        }
+
+        .card-spinner::after {
+            background: linear-gradient(90deg, var(--accent-3), var(--accent-4));
+        }
+
+        /* Emoji icon */
+        .card-icon {
+            font-size: 4.5rem;
+            line-height: 1;
+            animation: icon-float 3s ease-in-out infinite;
+            filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.4));
+        }
+
+        .card-spinner .card-icon {
+            animation-delay: -1.5s;
+        }
+
+        @keyframes icon-float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .card-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.55rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            text-align: center;
+        }
+
+        .card-tongkrongan .card-title {
+            color: #fff;
+        }
+
+        .card-spinner .card-title {
+            color: var(--accent-3);
+        }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        /* Tag badges */
+        .card-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tag {
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* CTA button inside card */
+        .card-cta {
+            margin-top: 0.4rem;
+            padding: 0.75rem 2.2rem;
+            border-radius: 50px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card-cta:hover {
+            transform: scale(1.05);
+        }
+
+        .card-tongkrongan .card-cta {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            box-shadow: 0 4px 24px rgba(255, 42, 95, 0.4);
+        }
+
+        .card-tongkrongan .card-cta:hover {
+            box-shadow: 0 8px 32px rgba(255, 42, 95, 0.6);
+        }
+
+        .card-spinner .card-cta {
+            background: linear-gradient(135deg, #FF8C00, var(--accent-3));
+            box-shadow: 0 4px 24px rgba(255, 200, 0, 0.35);
+        }
+
+        .card-spinner .card-cta:hover {
+            box-shadow: 0 8px 32px rgba(255, 200, 0, 0.6);
+        }
+
+        /* ─── Footer ─── */
+        .hub-footer {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .hub-footer span {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 480px) {
+            .mode-cards {
+                gap: 1.2rem;
+            }
+
+            .mode-card {
+                padding: 2rem 1.5rem 1.6rem;
+                border-radius: 22px;
+            }
+
+            .card-icon {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Ambient glows -->
+    <div class="glow-blob glow-blob-1"></div>
+    <div class="glow-blob glow-blob-2"></div>
+    <div class="glow-blob glow-blob-3"></div>
+
+    <div class="hub-wrapper">
+
+        <!-- Header -->
+        <header class="hub-header">
+            <p class="hub-eyebrow">✨ Choose your mode</p>
+            <h1 class="hub-title">
+                Question <span class="grad-text">Shuffles</span>
+            </h1>
+            <p class="hub-subtitle">Two games, one vibe. Pick your poison 😏</p>
+        </header>
+
+        <!-- Mode selection cards -->
+        <div class="mode-cards">
+
+            <!-- Card Game -->
+            <a href="/game" class="mode-card card-tongkrongan" id="btn-tongkrongan">
+                <div class="card-icon">🃏</div>
+                <h2 class="card-title">Tongkrongan<br>Questions</h2>
+                <p class="card-desc">Draw 3 mystery cards and flip one to reveal a daring question. Perfect for friend
+                    groups!</p>
+                <div class="card-tags">
+                    <span class="tag">🃏 CARD GAME</span>
+                    <span class="tag">ID / EN</span>
+                    <span class="tag">SHUFFLE</span>
+                </div>
+                <button class="card-cta">Play Now →</button>
+            </a>
+
+            <!-- Solar Spinner -->
+            <a href="/spinner" class="mode-card card-spinner" id="btn-spinner">
+                <div class="card-icon">🌍</div>
+                <h2 class="card-title">Funny Question<br>Spinner 🌟</h2>
+                <p class="card-desc">Click the Sun, trigger a Big Bang, and let the cosmos deliver your funny question!
+                </p>
+                <div class="card-tags">
+                    <span class="tag">🪐 SOLAR SYSTEM</span>
+                    <span class="tag">ID / EN</span>
+                    <span class="tag">Planet</span>
+                </div>
+                <button class="card-cta">Spin Now →</button>
+            </a>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="hub-footer">
+            Credit by <span>Daigo</span>
+        </footer>
+
+    </div>
+</body>
+
+</html>
