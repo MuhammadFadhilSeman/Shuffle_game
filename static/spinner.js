@@ -37,6 +37,7 @@ const AudioManager = (() => {
     const pool  = {};     // { key: HTMLAudioElement }
     let ambientReady = false;
     let userInteracted = false;
+    let ambientStarted = false;
 
     // ── Helpers ─────────────────────────────────────────────────────────────
 
@@ -90,10 +91,10 @@ const AudioManager = (() => {
         ambientReady = true;
     }
 
-    /** Call once after the first user interaction to unlock audio context. */
+    /** Call after user interaction to unlock audio context. Will retry if it fails. */
     function unlockAndStartAmbient() {
-        if (userInteracted) return;
         userInteracted = true;
+        if (ambientStarted) return;
 
         if (ambientReady) {
             console.log("Attempting to play ambient music...");
@@ -101,11 +102,16 @@ const AudioManager = (() => {
             if (p !== undefined) {
                 p.then(() => {
                     console.log("Ambient music started successfully.");
+                    ambientStarted = true;
                 }).catch((err) => { 
-                    console.warn("Autoplay blocked or delayed:", err); 
+                    console.warn("Autoplay blocked or delayed. Will retry on next interaction.", err); 
                 });
             }
         }
+    }
+
+    function hasAmbientStarted() {
+        return ambientStarted;
     }
 
     // Named play functions (called by event handlers below)
@@ -144,6 +150,7 @@ const AudioManager = (() => {
     return {
         init,
         unlockAndStartAmbient,
+        hasAmbientStarted,
         toggleAmbientMute,
         isAmbientMuted,
         playSunHover,
@@ -250,18 +257,20 @@ let isAnimating  = false;
 
 /* ─────────────────────────────────────────────
    First-interaction unlock (autoplay policy)
-   Attach to every gesture type for maximum
-   mobile / desktop compatibility.
+   We keep trying to start ambient on every interaction
+   until it successfully reports it has started.
 ───────────────────────────────────────────── */
 const UNLOCK_EVENTS = ['click', 'touchstart', 'keydown', 'pointerdown'];
-function onFirstInteraction() {
+function onInteractionAttempt() {
     AudioManager.unlockAndStartAmbient();
-    UNLOCK_EVENTS.forEach(evt =>
-        document.removeEventListener(evt, onFirstInteraction, { passive: true })
-    );
+    if (AudioManager.hasAmbientStarted()) {
+        UNLOCK_EVENTS.forEach(evt =>
+            document.removeEventListener(evt, onInteractionAttempt, { passive: true })
+        );
+    }
 }
 UNLOCK_EVENTS.forEach(evt =>
-    document.addEventListener(evt, onFirstInteraction, { passive: true })
+    document.addEventListener(evt, onInteractionAttempt, { passive: true })
 );
 
 /* ─────────────────────────────────────────────
