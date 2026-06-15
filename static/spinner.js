@@ -251,9 +251,28 @@ const langToggle      = document.getElementById('spinner-lang-toggle');
 const labelId         = document.getElementById('spinner-label-id');
 const labelEn         = document.getElementById('spinner-label-en');
 const ambientMuteBtn  = document.getElementById('ambient-mute-btn');
+const endOverlay      = document.getElementById('end-overlay');
+const restartBtn      = document.getElementById('restart-btn');
 
-let currentLang  = 'en';
+let currentLang  = 'id';
 let isAnimating  = false;
+
+let baseQuestions = [];
+let availableQuestions = [];
+
+async function fetchAllQuestions() {
+    try {
+        const url = `/api/spinner_questions?lang=${currentLang}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Network error');
+        baseQuestions = await res.json();
+        availableQuestions = [...baseQuestions].sort(() => 0.5 - Math.random());
+    } catch (err) {
+        console.error("Failed to fetch spinner questions:", err);
+    }
+}
+// Fetch initially
+fetchAllQuestions();
 
 /* ─────────────────────────────────────────────
    First-interaction unlock (autoplay policy)
@@ -382,6 +401,7 @@ langToggle.addEventListener('change', e => {
     currentLang = e.target.checked ? 'en' : 'id';
     labelEn.classList.toggle('active', e.target.checked);
     labelId.classList.toggle('active', !e.target.checked);
+    fetchAllQuestions();
 });
 
 
@@ -461,14 +481,16 @@ function applyPlanetToModal(planet) {
 
 
 /* ─────────────────────────────────────────────
-   5. Fetch question from API
+   5. Fetch question from local pool
 ───────────────────────────────────────────── */
 async function fetchQuestion() {
-    const url = `/api/get_question?lang=${currentLang}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Network error');
-    const data = await res.json();
-    return data.question;
+    // Artificial delay to simulate network/dramatic effect
+    await new Promise(r => setTimeout(r, 600));
+    
+    if (availableQuestions.length === 0) {
+        throw new Error('No more questions');
+    }
+    return availableQuestions.pop();
 }
 
 
@@ -559,6 +581,12 @@ function restoreSolarSystem() {
 ───────────────────────────────────────────── */
 function triggerBigBang() {
     if (isAnimating) return;
+
+    if (availableQuestions.length === 0) {
+        endOverlay.classList.remove('hidden');
+        return;
+    }
+
     isAnimating = true;
 
     // Unlock ambient on this (first) interaction if not already done
@@ -658,6 +686,13 @@ initPlanetScatterVars();
 
 // Sun click → Big Bang
 sunBtn.addEventListener('click', triggerBigBang);
+
+// Restart from end overlay
+restartBtn.addEventListener('click', () => {
+    availableQuestions = [...baseQuestions].sort(() => 0.5 - Math.random());
+    endOverlay.classList.add('hidden');
+    AudioManager.playModalClose(); // Just a sound effect for clicking
+});
 
 // "Spin Again" — close modal, restore solar system, re-trigger
 spinAgainBtn.addEventListener('click', () => {

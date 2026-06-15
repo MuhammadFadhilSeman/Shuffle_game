@@ -266,5 +266,17 @@ def get_question():
     return jsonify({"question": question})
 
 
+@app.route("/api/spinner_questions")
+def get_spinner_questions():
+    """Returns the full list of spinner questions to allow frontend to shuffle and avoid repeats."""
+    lang = request.args.get("lang", "id")
+    # Spinner only has one language for now, but we prepare for future if needed.
+    questions_list = SPINNER_QUESTIONS
+    
+    shuffled_questions = list(questions_list)
+    random.shuffle(shuffled_questions)
+    return jsonify(shuffled_questions)
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

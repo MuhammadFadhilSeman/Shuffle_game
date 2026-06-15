@@ -11,6 +11,18 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='spinner.css') }}">
 </head>
 <body>
+    <!-- Overlay when questions are exhausted -->
+    <div id="end-overlay" class="end-overlay hidden" style="
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        z-index: 10000; text-align: center; font-family: 'Nunito', sans-serif;">
+        <h2 style="color: white; font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 900;">Pertanyaan Habis!</h2>
+        <p style="color: rgba(255,255,255,0.8); margin-bottom: 2rem; font-size: 1.2rem;">Do you want to restart?</p>
+        <button id="restart-btn" class="modal-btn btn-spin-again" style="margin: 0; font-size: 1.2rem; padding: 1rem 3rem;">
+            <span>🔄 Restart Game</span>
+        </button>
+    </div>
 
     <!-- Meteor shower canvas layer -->
     <canvas id="meteor-canvas"></canvas>

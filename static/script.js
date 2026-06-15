@@ -12,9 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let isGameActive = false;
     let baseQuestions = [];
+    let availableQuestions = [];
     let currentLang = 'id';
     let audioCtx = null;
     let gameStarted = false;
+
+    const endOverlay = document.getElementById('end-overlay');
+    const restartBtn = document.getElementById('restart-btn');
 
     // Initialize audio on first user interaction
     function initAudio() {
@@ -92,9 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`/api/questions?lang=${currentLang}`);
             baseQuestions = await response.json();
             
+            // Initialize available questions with a shuffled copy
+            availableQuestions = [...baseQuestions].sort(() => 0.5 - Math.random());
+            
             // If user already clicked "Mulai Main", changing language should auto-deal
-            if (gameStarted && baseQuestions.length > 0) {
+            if (gameStarted && availableQuestions.length >= 3) {
                 startDeckAnimationAndDeal();
+            } else if (gameStarted && availableQuestions.length > 0) {
+                 startDeckAnimationAndDeal();
             }
         } catch (error) {
             console.error('Error fetching questions:', error);
@@ -122,9 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
         dealBtn.classList.add('hidden');
         isGameActive = true;
         
-        // Pick 3 random questions
-        let shuffled = [...baseQuestions].sort(() => 0.5 - Math.random());
-        let selectedQuestions = shuffled.slice(0, 3);
+        // Take up to 3 questions from the available pool
+        let selectedQuestions = availableQuestions.splice(0, 3);
         
         const cardElements = [];
 
@@ -173,6 +181,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function startDeckAnimationAndDeal() {
         initAudio();
         
+        if (availableQuestions.length === 0) {
+            // No more questions left! Trigger the end overlay.
+            endOverlay.classList.remove('hidden');
+            return;
+        }
+
         // Remove existing cards first
         const cards = document.querySelectorAll('.poker-card');
         cards.forEach(card => {
@@ -206,6 +220,13 @@ document.addEventListener('DOMContentLoaded', () => {
     startBtn.addEventListener('click', () => {
         gameStarted = true;
         startOverlay.classList.add('hidden');
+        startDeckAnimationAndDeal();
+    });
+
+    restartBtn.addEventListener('click', () => {
+        // Refill and reshuffle the questions pool
+        availableQuestions = [...baseQuestions].sort(() => 0.5 - Math.random());
+        endOverlay.classList.add('hidden');
         startDeckAnimationAndDeal();
     });
 
