@@ -1,9 +1,153 @@
 /**
  * spinner.js — Funny Question Spinner (Solar System edition)
- * Handles: meteor shower canvas, Big Bang effect, planet modal, API fetch
+ * Handles: meteor shower canvas, Big Bang effect, planet modal, API fetch,
+ *          and a centralized AudioManager for all sound effects + ambient music.
  */
 
 'use strict';
+
+/* ─────────────────────────────────────────────
+   AudioManager — Centralized sound controller
+───────────────────────────────────────────── */
+const AudioManager = (() => {
+    // ── Volume presets ──────────────────────────────────────────────────────
+    const VOL = {
+        ambient: 0.25,
+        hover:   0.35,
+        effects: 0.60,
+    };
+
+    // ── Audio file paths ────────────────────────────────────────────────────
+    const AUDIO_SRC = {
+        ambient:       '/static/audio/Space Ambient Sleep Music.mp3',
+        sunHover:      '/static/audio/sun-hover.wav',
+        sunCharge:     '/static/audio/sun-charge.wav',
+        bigbangImpact: '/static/audio/bigbang-impact.wav',
+        particleBurst: '/static/audio/particle-burst.wav',
+        planetSelect:  '/static/audio/planet-select.wav',
+        cardReveal:    '/static/audio/card-reveal.wav',
+        loaderTick:    '/static/audio/loader-tick.wav',
+        questionReveal:'/static/audio/question-reveal.wav',
+        buttonHover:   '/static/audio/button-hover.wav',
+        spinAgain:     '/static/audio/spin-again.wav',
+        modalClose:    '/static/audio/modal-close.wav',
+    };
+
+    // ── Internal state ──────────────────────────────────────────────────────
+    const pool  = {};     // { key: HTMLAudioElement }
+    let ambientReady = false;
+    let userInteracted = false;
+
+    // ── Helpers ─────────────────────────────────────────────────────────────
+
+    /** Create and preload a single Audio element. */
+    function makeAudio(src, volume, loop = false) {
+        const audio = new Audio();
+        audio.preload = 'auto';
+        audio.volume  = volume;
+        audio.loop    = loop;
+        audio.src     = src;
+        return audio;
+    }
+
+    /**
+     * Play a sound safely.
+     * – Clones the node for effect sounds so concurrent playback never blocks.
+     * – Returns the promise so callers can chain if needed.
+     */
+    function playSafe(audio) {
+        if (!userInteracted) return;
+        try {
+            // Rewind non-looping sounds so they always replay from the start
+            if (!audio.loop) {
+                audio.currentTime = 0;
+            }
+            const p = audio.play();
+            if (p !== undefined) {
+                p.catch(() => { /* Autoplay policy – silently ignore */ });
+            }
+        } catch (_) { /* Fail silently */ }
+    }
+
+    // ── Public API ───────────────────────────────────────────────────────────
+
+    function init() {
+        // Effects pool
+        pool.sunHover       = makeAudio(AUDIO_SRC.sunHover,       VOL.hover);
+        pool.sunCharge      = makeAudio(AUDIO_SRC.sunCharge,      VOL.effects);
+        pool.bigbangImpact  = makeAudio(AUDIO_SRC.bigbangImpact,  VOL.effects);
+        pool.particleBurst  = makeAudio(AUDIO_SRC.particleBurst,  VOL.effects);
+        pool.planetSelect   = makeAudio(AUDIO_SRC.planetSelect,   VOL.effects);
+        pool.cardReveal     = makeAudio(AUDIO_SRC.cardReveal,     VOL.effects);
+        pool.loaderTick     = makeAudio(AUDIO_SRC.loaderTick,     VOL.effects);
+        pool.questionReveal = makeAudio(AUDIO_SRC.questionReveal, VOL.effects);
+        pool.buttonHover    = makeAudio(AUDIO_SRC.buttonHover,    VOL.hover);
+        pool.spinAgain      = makeAudio(AUDIO_SRC.spinAgain,      VOL.effects);
+        pool.modalClose     = makeAudio(AUDIO_SRC.modalClose,     VOL.effects);
+
+        // Ambient loop (not started yet – waits for first interaction)
+        pool.ambient = makeAudio(AUDIO_SRC.ambient, VOL.ambient, true);
+        ambientReady = true;
+    }
+
+    /** Call once after the first user interaction to unlock audio context. */
+    function unlockAndStartAmbient() {
+        if (userInteracted) return;
+        userInteracted = true;
+
+        if (ambientReady) {
+            const p = pool.ambient.play();
+            if (p !== undefined) {
+                p.catch(() => { /* Blocked by browser – ignore */ });
+            }
+        }
+    }
+
+    // Named play functions (called by event handlers below)
+    function playSunHover()       { playSafe(pool.sunHover); }
+    function playSunCharge()      { playSafe(pool.sunCharge); }
+    function playBigBangImpact()  { playSafe(pool.bigbangImpact); }
+    function playParticleBurst()  { playSafe(pool.particleBurst); }
+    function playPlanetSelect()   { playSafe(pool.planetSelect); }
+    function playCardReveal()     { playSafe(pool.cardReveal); }
+    function playLoaderTick()     { playSafe(pool.loaderTick); }
+    function playQuestionReveal() { playSafe(pool.questionReveal); }
+    function playButtonHover()    { playSafe(pool.buttonHover); }
+    function playSpinAgain()      { playSafe(pool.spinAgain); }
+    function playModalClose()     { playSafe(pool.modalClose); }
+
+    /** Toggle ambient music mute on/off. Returns new muted state (true = muted). */
+    function toggleAmbientMute() {
+        if (!pool.ambient) return false;
+        pool.ambient.muted = !pool.ambient.muted;
+        return pool.ambient.muted;
+    }
+
+    function isAmbientMuted() {
+        return pool.ambient ? pool.ambient.muted : false;
+    }
+
+    return {
+        init,
+        unlockAndStartAmbient,
+        toggleAmbientMute,
+        isAmbientMuted,
+        playSunHover,
+        playSunCharge,
+        playBigBangImpact,
+        playParticleBurst,
+        playPlanetSelect,
+        playCardReveal,
+        playLoaderTick,
+        playQuestionReveal,
+        playButtonHover,
+        playSpinAgain,
+        playModalClose,
+    };
+})();
+
+// Initialise audio pool immediately (preloads metadata)
+AudioManager.init();
 
 /* ─────────────────────────────────────────────
    Planet configuration
@@ -85,9 +229,26 @@ const closeModalBtn   = document.getElementById('close-modal-btn');
 const langToggle      = document.getElementById('spinner-lang-toggle');
 const labelId         = document.getElementById('spinner-label-id');
 const labelEn         = document.getElementById('spinner-label-en');
+const ambientMuteBtn  = document.getElementById('ambient-mute-btn');
 
 let currentLang  = 'en';
 let isAnimating  = false;
+
+/* ─────────────────────────────────────────────
+   First-interaction unlock (autoplay policy)
+   Attach to every gesture type for maximum
+   mobile / desktop compatibility.
+───────────────────────────────────────────── */
+const UNLOCK_EVENTS = ['click', 'touchstart', 'keydown', 'pointerdown'];
+function onFirstInteraction() {
+    AudioManager.unlockAndStartAmbient();
+    UNLOCK_EVENTS.forEach(evt =>
+        document.removeEventListener(evt, onFirstInteraction, { passive: true })
+    );
+}
+UNLOCK_EVENTS.forEach(evt =>
+    document.addEventListener(evt, onFirstInteraction, { passive: true })
+);
 
 /* ─────────────────────────────────────────────
    1. Meteor shower canvas
@@ -289,7 +450,29 @@ async function fetchQuestion() {
 
 
 /* ─────────────────────────────────────────────
-   6. Show modal with planet + question
+   6. Loader-tick sound — fires every dot cycle
+   The CSS loader has three dots that animate
+   sequentially; we mirror the cadence in JS.
+───────────────────────────────────────────── */
+let loaderTickInterval = null;
+
+function startLoaderTick() {
+    // CSS loader dot animation typically cycles ~600 ms per dot
+    loaderTickInterval = setInterval(() => {
+        AudioManager.playLoaderTick();
+    }, 600);
+}
+
+function stopLoaderTick() {
+    if (loaderTickInterval !== null) {
+        clearInterval(loaderTickInterval);
+        loaderTickInterval = null;
+    }
+}
+
+
+/* ─────────────────────────────────────────────
+   7. Show modal with planet + question
 ───────────────────────────────────────────── */
 async function showModal(planet) {
     // Reset state
@@ -298,27 +481,45 @@ async function showModal(planet) {
     questionLoader.style.display = 'flex';
 
     applyPlanetToModal(planet);
+
+    // Planet selected sound
+    AudioManager.playPlanetSelect();
+
+    // Show modal
     questionModal.classList.add('visible');
+
+    // Card reveal sound when modal appears
+    AudioManager.playCardReveal();
+
+    // Start loader tick
+    startLoaderTick();
 
     // Fetch question concurrently
     try {
         const question = await fetchQuestion();
+        stopLoaderTick();
         questionLoader.style.display = 'none';
         questionText.textContent = question;
         questionText.classList.remove('hidden');
+
+        // Question reveal sound
+        AudioManager.playQuestionReveal();
     } catch (err) {
+        stopLoaderTick();
         questionLoader.style.display = 'none';
         questionText.textContent = '🌌 The cosmos is silent… try again!';
         questionText.classList.remove('hidden');
+        AudioManager.playQuestionReveal();
     }
 }
 
 
 /* ─────────────────────────────────────────────
-   7. Hide modal & restore solar system
+   8. Hide modal & restore solar system
 ───────────────────────────────────────────── */
 function hideModal() {
     questionModal.classList.remove('visible');
+    stopLoaderTick();   // Safety — stop tick if modal closes while loading
 }
 
 function restoreSolarSystem() {
@@ -331,11 +532,17 @@ function restoreSolarSystem() {
 
 
 /* ─────────────────────────────────────────────
-   8. Full Big Bang sequence
+   9. Full Big Bang sequence
 ───────────────────────────────────────────── */
 function triggerBigBang() {
     if (isAnimating) return;
     isAnimating = true;
+
+    // Unlock ambient on this (first) interaction if not already done
+    AudioManager.unlockAndStartAmbient();
+
+    // Sun charge sound plays immediately on click
+    AudioManager.playSunCharge();
 
     // Get sun center for particle origin
     const sunRect = sunBtn.getBoundingClientRect();
@@ -345,6 +552,12 @@ function triggerBigBang() {
     // --- Phase 1: Flash ---
     bangFlash.classList.add('active');
     setTimeout(() => bangFlash.classList.remove('active'), 120);
+
+    // Big Bang impact sound on flash
+    AudioManager.playBigBangImpact();
+
+    // Particle burst sound
+    AudioManager.playParticleBurst();
 
     // Particles
     createParticles(cx, cy);
@@ -363,11 +576,47 @@ function triggerBigBang() {
 
 
 /* ─────────────────────────────────────────────
-   9. Event listeners
+   10. Sun hover — debounced to prevent overlap
 ───────────────────────────────────────────── */
+let sunHoverDebounce = null;
 
-// Stamp --sx / --sy on each planet so the scatter animation
-// sends each one flying in a different direction
+sunBtn.addEventListener('mouseenter', () => {
+    if (sunHoverDebounce) return;      // Already playing, skip
+    AudioManager.playSunHover();
+    // Block re-trigger until the wav finishes (~600 ms)
+    sunHoverDebounce = setTimeout(() => {
+        sunHoverDebounce = null;
+    }, 650);
+});
+
+// Touch equivalent for mobile
+sunBtn.addEventListener('touchstart', () => {
+    if (sunHoverDebounce) return;
+    AudioManager.playSunHover();
+    sunHoverDebounce = setTimeout(() => { sunHoverDebounce = null; }, 650);
+}, { passive: true });
+
+
+/* ─────────────────────────────────────────────
+   11. Button hover sounds (Spin Again + Reset)
+───────────────────────────────────────────── */
+let btnHoverDebounce = null;
+
+function addButtonHoverSound(btn) {
+    btn.addEventListener('mouseenter', () => {
+        if (btnHoverDebounce) return;
+        AudioManager.playButtonHover();
+        btnHoverDebounce = setTimeout(() => { btnHoverDebounce = null; }, 300);
+    });
+}
+
+addButtonHoverSound(spinAgainBtn);
+addButtonHoverSound(closeModalBtn);
+
+
+/* ─────────────────────────────────────────────
+   12. Planet scatter vars (CSS custom props)
+───────────────────────────────────────────── */
 function initPlanetScatterVars() {
     PLANETS.forEach(planet => {
         const el = document.querySelector(`.${planet.cssClass}`);
@@ -379,10 +628,17 @@ function initPlanetScatterVars() {
 }
 initPlanetScatterVars();
 
+
+/* ─────────────────────────────────────────────
+   13. Event listeners
+───────────────────────────────────────────── */
+
+// Sun click → Big Bang
 sunBtn.addEventListener('click', triggerBigBang);
 
 // "Spin Again" — close modal, restore solar system, re-trigger
 spinAgainBtn.addEventListener('click', () => {
+    AudioManager.playSpinAgain();
     hideModal();
     setTimeout(() => {
         restoreSolarSystem();
@@ -393,12 +649,39 @@ spinAgainBtn.addEventListener('click', () => {
 
 // "Reset" — close modal, restore solar system
 closeModalBtn.addEventListener('click', () => {
+    AudioManager.playModalClose();
     hideModal();
     setTimeout(restoreSolarSystem, 350);
 });
 
 // Clicking modal backdrop also closes
 document.querySelector('.modal-backdrop').addEventListener('click', () => {
+    AudioManager.playModalClose();
     hideModal();
     setTimeout(restoreSolarSystem, 350);
 });
+
+/* ─────────────────────────────────────────────
+   14. Ambient music mute button
+───────────────────────────────────────────── */
+function syncMuteBtn(muted) {
+    const icon  = ambientMuteBtn.querySelector('.mute-icon');
+    const label = ambientMuteBtn.querySelector('.mute-label');
+    if (muted) {
+        icon.textContent  = '🔇';
+        label.textContent = 'Muted';
+        ambientMuteBtn.classList.add('is-muted');
+        ambientMuteBtn.setAttribute('aria-label', 'Unmute ambient music');
+    } else {
+        icon.textContent  = '🔊';
+        label.textContent = 'Music';
+        ambientMuteBtn.classList.remove('is-muted');
+        ambientMuteBtn.setAttribute('aria-label', 'Mute ambient music');
+    }
+}
+
+ambientMuteBtn.addEventListener('click', () => {
+    const nowMuted = AudioManager.toggleAmbientMute();
+    syncMuteBtn(nowMuted);
+});
+

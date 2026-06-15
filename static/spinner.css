@@ -111,6 +111,55 @@ html, body {
 .lang-label { font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.4); transition: color 0.3s; }
 .lang-label.active { color: var(--sun-core); }
 
+/* ── Ambient mute button ───────────────────────────────────── */
+.ambient-mute-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 10px;
+    padding: 4px 12px 4px 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.75);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.15s, box-shadow 0.25s;
+    outline: none;
+    pointer-events: all;
+    white-space: nowrap;
+}
+.ambient-mute-btn:hover {
+    background: rgba(0,245,255,0.1);
+    border-color: rgba(0,245,255,0.35);
+    color: var(--accent-cyan);
+    box-shadow: 0 0 12px rgba(0,245,255,0.2);
+    transform: translateY(-1px);
+}
+.ambient-mute-btn:active { transform: scale(0.95); }
+
+/* Muted state — looks faded */
+.ambient-mute-btn.is-muted {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.28);
+    box-shadow: none;
+}
+.ambient-mute-btn.is-muted:hover {
+    background: rgba(255,80,120,0.1);
+    border-color: rgba(255,80,120,0.3);
+    color: var(--accent-pink);
+    box-shadow: 0 0 10px rgba(255,80,120,0.15);
+}
+
+.mute-icon { font-size: 0.9rem; line-height: 1; }
+.mute-label { line-height: 1; }
+
+
+
 .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider {
