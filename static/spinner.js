@@ -19,7 +19,7 @@ const AudioManager = (() => {
 
     // ── Audio file paths ────────────────────────────────────────────────────
     const AUDIO_SRC = {
-        ambient:       '/static/audio/Space Ambient Sleep Music.mp3',
+        ambient:       '/static/audio/Space%20Ambient%20Sleep%20Music.mp3',
         sunHover:      '/static/audio/sun-hover.wav',
         sunCharge:     '/static/audio/sun-charge.wav',
         bigbangImpact: '/static/audio/bigbang-impact.wav',
