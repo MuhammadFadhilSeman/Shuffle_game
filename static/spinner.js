@@ -19,7 +19,7 @@ const AudioManager = (() => {
 
     // ── Audio file paths ────────────────────────────────────────────────────
     const AUDIO_SRC = {
-        ambient:       '/static/audio/Space%20Ambient%20Sleep%20Music.mp3',
+        ambient:       '/static/audio/space-ambient.mp3',
         sunHover:      '/static/audio/sun-hover.wav',
         sunCharge:     '/static/audio/sun-charge.wav',
         bigbangImpact: '/static/audio/bigbang-impact.wav',
@@ -96,9 +96,14 @@ const AudioManager = (() => {
         userInteracted = true;
 
         if (ambientReady) {
+            console.log("Attempting to play ambient music...");
             const p = pool.ambient.play();
             if (p !== undefined) {
-                p.catch(() => { /* Blocked by browser – ignore */ });
+                p.then(() => {
+                    console.log("Ambient music started successfully.");
+                }).catch((err) => { 
+                    console.warn("Autoplay blocked or delayed:", err); 
+                });
             }
         }
     }
@@ -119,7 +124,16 @@ const AudioManager = (() => {
     /** Toggle ambient music mute on/off. Returns new muted state (true = muted). */
     function toggleAmbientMute() {
         if (!pool.ambient) return false;
+        
+        // Mute toggle
         pool.ambient.muted = !pool.ambient.muted;
+        
+        // If unmuting, ensure the audio is actually playing (fixes cases where it paused)
+        if (!pool.ambient.muted && pool.ambient.paused) {
+            console.log("Unmuting and attempting to play ambient music...");
+            pool.ambient.play().catch(err => console.warn("Failed to play on unmute:", err));
+        }
+        
         return pool.ambient.muted;
     }
 
